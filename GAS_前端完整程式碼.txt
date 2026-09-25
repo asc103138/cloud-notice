@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#173f5f">
+  <title>家長通知中心</title>
+  <style>
+    :root {
+      --ink: #5a4b4f; /* soft brown/grey for text */
+      --ink-soft: #8a7b7f;
+      --teal: #ff91b2; /* Kirby pink */
+      --coral: #ffd700; /* Star yellow */
+      --cream: #fff0f5;
+      --paper: #ffffff;
+      --line: #ffe0e9;
+      --muted: #a39598;
+      --shadow: 0 12px 30px rgba(255, 145, 178, 0.2);
+      --theme-glow: rgba(255, 145, 178, 0.4);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      position: relative;
+      isolation: isolate;
+      margin: 0;
+      font-size: 16px;
+      color: var(--ink);
+      overflow-x: hidden;
+      background: #ffe6ee; /* base pastel pink */
+      font-family: "Varela Round", -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", sans-serif;
+      min-height: 100vh;
+    }
+
+    body::before,
+    body::after {
+      position: fixed;
+      inset: -12%;
+      z-index: -2;
+      pointer-events: none;
+      content: "";
+    }
+    body::before {
+      background:
+        radial-gradient(ellipse 58% 22% at 17% 87%, rgba(255, 182, 193, 0.9) 0 38%, transparent 70%),
+        radial-gradient(ellipse 64% 25% at 83% 91%, rgba(135, 206, 235, 0.8) 0 37%, transparent 71%),
+        radial-gradient(ellipse 48% 18% at 51% 78%, rgba(255, 255, 224, 0.9) 0 35%, transparent 72%),
+        linear-gradient(180deg, #e6f7ff 0%, #ffe6ee 36%, #fff0f5 64%, #ffb6c1 100%);
+      background-size: 135% 135%, 145% 145%, 130% 130%, 100% 100%;
+      filter: saturate(1.1);
+      animation: duoDunes 22s ease-in-out infinite alternate;
+    }
+    body::after {
+      z-index: -1;
+      background:
+        radial-gradient(circle at 77% 17%, rgba(255, 250, 205, 0.9), transparent 12rem),
+        linear-gradient(155deg, transparent 42%, rgba(255, 192, 203, 0.3) 53%, transparent 64%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6));
+      opacity: 0.6;
+      mix-blend-mode: soft-light;
+      animation: duoTwilight 28s ease-in-out infinite alternate;
+    }
+    @keyframes duoDunes {
+      0% { transform: scale(1) translate3d(-1.5%, 0, 0); background-position: 0% 100%, 100% 100%, 45% 100%, 50% 50%; }
+      100% { transform: scale(1.08) translate3d(1.5%, -1%, 0); background-position: 18% 92%, 82% 94%, 58% 96%, 50% 50%; }
+    }
+    @keyframes duoTwilight {
+      0% { opacity: 0.06; transform: translateX(-2%) scale(1); }
+      55% { opacity: 0.22; transform: translateX(1%) scale(1.03); }
+      100% { opacity: 0.42; transform: translateX(3%) scale(1.06); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body::before,
+      body::after { animation: none; }
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { position: relative; z-index: 1; width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 28px 0 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 15px 15px 15px 4px;
+      color: #fff;
+      background: var(--ink);
+      font-size: 20px;
+      box-shadow: 7px 7px 0 rgba(231, 111, 81, 0.55);
+    }
+    .brand h1 { margin: 0; font-size: 1.1rem; letter-spacing: 0.08em; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: 0.78rem; }
+    .top-link {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 0.86rem;
+      border-bottom: 1px solid var(--ink-soft);
+      padding-bottom: 3px;
+    }
+    .nav-button {
+      border: 0;
+      background: transparent;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 24px;
+      padding: 40px 0 28px;
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--coral);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+    }
+    .hero h2 { max-width: 680px; margin: 0; font-size: clamp(2rem, 5vw, 4.5rem); line-height: 1.04; letter-spacing: -0.05em; }
+    .hero p { max-width: 570px; margin: 18px 0 0; color: var(--ink-soft); line-height: 1.8; }
+    .count-block { text-align: right; }
+    .count-block strong { display: block; color: var(--coral); font-size: 3.8rem; line-height: 0.9; letter-spacing: -0.08em; }
+    .count-block span { color: var(--muted); font-size: 0.8rem; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: end;
+      padding: 18px;
+      border: 1px solid rgba(217, 226, 232, 0.9);
+      border-radius: 18px;
+      background: rgba(255, 253, 250, 0.85);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 16px;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .field { display: grid; gap: 7px; min-width: 170px; flex: 1; }
+    .field label { color: var(--ink-soft); font-size: 0.78rem; font-weight: 700; }
+    input, select, textarea {
+      width: 100%;
+      color: var(--ink);
+      border: 2px solid var(--line);
+      border-radius: 20px;
+      background: #ffffff;
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+    input, select { height: 46px; padding: 0 16px; }
+    textarea { min-height: 150px; padding: 16px; resize: vertical; line-height: 1.7; }
+    input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 4px var(--theme-glow); }
+    .button {
+      min-height: 46px;
+      padding: 0 20px;
+      border: 0;
+      border-radius: 24px;
+      color: #fff;
+      background: var(--teal);
+      font-weight: 700;
+      transition: transform 160ms ease, background 160ms ease;
+    }
+    .button:hover { transform: translateY(-2px); background: #f77fa3; }
+    .button.secondary { color: var(--ink); background: #ffe0e9; }
+    .button.secondary:hover { background: #ffd1df; }
+    .button.accent { color: var(--ink); background: var(--coral); }
+    .button.small { min-height: 38px; padding: 0 16px; font-size: 0.82rem; }
+    .button:disabled { cursor: wait; opacity: 0.6; transform: none; }
+
+    .notice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      padding: 28px 0 60px;
+    }
+    .notice-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 260px;
+      overflow: hidden;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      border-radius: 28px;
+      background: var(--paper);
+      box-shadow: 0 10px 25px rgba(255, 145, 178, 0.15);
+    }
+    .notice-card.pinned { border-color: rgba(255, 215, 0, 0.8); box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3); }
+    .notice-card-body { display: flex; flex: 1; flex-direction: column; padding: 24px; }
+    .notice-card h3 { margin: 11px 0 9px; font-size: 1.18rem; line-height: 1.4; color: #d65c82; }
+    .notice-date { color: var(--muted); font-size: 0.78rem; }
+    .notice-content { margin: 0; color: var(--ink-soft); line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .notice-image { width: 100%; max-height: 240px; object-fit: cover; border-bottom: 3px solid #fff; background: #ffe0e9; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .badge { display: inline-flex; align-items: center; min-height: 26px; padding: 0 12px; border-radius: 999px; color: #fff; background: var(--teal); font-size: 0.75rem; font-weight: 700; }
+    .badge.pin { color: #8c7300; background: var(--coral); }
+    .empty {
+      grid-column: 1 / -1;
+      padding: 65px 20px;
+      color: var(--muted);
+      text-align: center;
+      border: 2px dashed #ffb6c1;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .admin-header { padding: 35px 0 22px; }
+    .admin-header h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -0.04em; color: #d65c82; }
+    .admin-header p { margin: 10px 0 0; color: var(--muted); line-height: 1.6; }
+    .admin-layout { display: grid; grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.4fr); gap: 20px; padding-bottom: 50px; }
+    .panel { border: 3px solid rgba(255, 255, 255, 0.9); border-radius: 28px; background: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 18px 24px; border-bottom: 2px solid var(--line); }
+    .panel-heading h3 { margin: 0; font-size: 1.1rem; color: #d65c82; }
+    .panel-body { padding: 24px; }
+    .form-grid { display: grid; gap: 15px; }
+    .check-row { display: flex; flex-wrap: wrap; gap: 16px; padding: 3px 0; }
+    .check-row label { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 0.86rem; }
+    .check-row input { width: 20px; height: 20px; accent-color: var(--teal); }
+    .form-actions { display: flex; flex-wrap: wrap; gap: 9px; padding-top: 4px; }
+    .file-note { color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
+    .image-preview { display: none; max-width: 100%; max-height: 170px; margin-top: 8px; border-radius: 14px; object-fit: cover; }
+    .image-preview.visible { display: block; }
+    .admin-list { display: grid; gap: 12px; }
+    .admin-item { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 18px; border: 2px solid var(--line); border-radius: 20px; background: #fff; }
+    .admin-item h4 { margin: 0 0 6px; font-size: 1rem; color: var(--ink); }
+    .admin-meta { display: flex; flex-wrap: wrap; gap: 7px 12px; color: var(--muted); font-size: 0.76rem; }
+    .admin-actions { display: flex; align-items: center; gap: 7px; }
+    .status { color: var(--muted); font-size: 0.78rem; }
+    .status.ok { color: var(--teal); }
+    .status.error { color: #b7422b; }
+    .hidden { display: none !important; }
+    .loading { padding: 42px 20px; color: var(--muted); text-align: center; }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(390px, calc(100% - 40px)); padding: 13px 16px; border-radius: 11px; color: #fff; background: var(--ink); box-shadow: var(--shadow); font-size: 0.86rem; line-height: 1.5; }
+    .toast.warning { background: #8b5e20; }
+    .toast.error { background: #a43d2b; }
+    footer { padding: 0 0 28px; color: var(--muted); font-size: 0.73rem; text-align: center; }
+
+    @media (max-width: 760px) {
+      body { padding-bottom: env(safe-area-inset-bottom); }
+      .shell { width: min(100% - 24px, 680px); }
+      .topbar { align-items: flex-start; gap: 12px; padding: 16px 0 10px; }
+      .brand { min-width: 0; }
+      .brand-mark { width: 40px; height: 40px; border-radius: 13px 13px 13px 4px; font-size: 18px; }
+      .brand h1 { font-size: 1rem; }
+      .brand p { max-width: 210px; line-height: 1.35; }
+      .top-link { flex: 0 0 auto; min-height: 44px; padding: 10px 0 4px; font-size: 0.82rem; white-space: nowrap; }
+      .hero { grid-template-columns: 1fr; gap: 12px; padding: 16px 0 12px; }
+      .hero h2 { font-size: clamp(2rem, 9vw, 3rem); }
+      .hero p { margin-top: 8px; font-size: 0.94rem; line-height: 1.5; }
+      .count-block { text-align: left; }
+      .count-block strong { display: inline; margin-right: 8px; font-size: 2.2rem; }
+      .notice-grid { grid-template-columns: 1fr; gap: 16px; padding: 20px 0 42px; }
+      .notice-card { min-height: 0; border-radius: 16px; }
+      .notice-image { max-height: min(52vh, 320px); border-radius: 16px 16px 0 0; }
+      .notice-card-body { padding: 16px 18px; }
+      .notice-card h3 { font-size: 1.15rem; }
+      .notice-content { font-size: 1rem; line-height: 1.6; }
+      .toolbar { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 10px; 
+        padding: 14px; 
+        top: 10px;
+        border-radius: 16px;
+      }
+      .toolbar .field { min-width: 0; }
+      .toolbar .button { grid-column: 1 / -1; width: 100%; }
+      input, select { min-height: 46px; font-size: 16px; }
+      textarea { min-height: 160px; font-size: 16px; }
+      .button { min-height: 46px; }
+      .admin-header { padding: 24px 0 16px; }
+      .admin-header h2 { font-size: clamp(1.9rem, 9vw, 2.8rem); }
+      .admin-layout { grid-template-columns: 1fr; gap: 14px; }
+      .panel { border-radius: 15px; }
+      .panel-heading, .panel-body { padding: 15px; }
+      .check-row { flex-direction: column; gap: 5px; }
+      .check-row label { min-height: 44px; }
+      .form-actions { flex-direction: column; }
+      .form-actions .button { width: 100%; }
+      .admin-item { grid-template-columns: 1fr; gap: 10px; }
+      .admin-actions .button { min-height: 42px; }
+    }
+
+    @media (max-width: 420px) {
+      .shell { width: min(100% - 18px, 680px); }
+      .topbar { gap: 8px; }
+      .brand p { display: none; }
+      .hero h2 { font-size: 2.35rem; }
+      .toolbar { grid-template-columns: 1fr; }
+      .toolbar .button { grid-column: auto; }
+      .count-block strong { font-size: 2.2rem; }
+    }
+
+    @media (min-width: 761px) and (max-width: 1020px) {
+      .shell { width: min(100% - 34px, 900px); }
+      .notice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" style="box-shadow: 7px 7px 0 #ffd700; background: #ff91b2;">🌟</div>
+        <div>
+          <h1>星之卡比・家長通知中心</h1>
+          <p>官方帳號通知的長期保存與查閱（噗噗噗之國）</p>
+        </div>
+      </div>
+      <button id="showPublic" class="top-link nav-button" type="button">回到公開頁</button>
+      <button id="showAdmin" class="top-link nav-button hidden" style="margin-left:auto;" type="button">管理介面</button>
+    </header>
+
+    <main>
+      <section id="publicView" class="view">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">DREAM LAND NOTICE ARCHIVE</p>
+            <h2>重要通知，<br>在這裡像星星一樣閃耀。</h2>
+            <p>依月份與通知類型整理，讓家長不用在訊息紀錄裡反覆翻找。</p>
+          </div>
+          <div class="count-block">
+            <strong id="publicCount">0</strong>
+            <span>則目前可查閱通知</span>
+          </div>
+        </div>
+
+        <div class="toolbar" aria-label="通知篩選">
+          <div class="field">
+            <label for="monthFilter">月份</label>
+            <select id="monthFilter"><option value="">全部月份</option></select>
+          </div>
+          <div class="field">
+            <label for="categoryFilter">通知分類</label>
+            <select id="categoryFilter"><option value="">全部分類</option></select>
+          </div>
+          <button id="clearFilters" class="button secondary" type="button">清除篩選</button>
+        </div>
+        <div id="publicLoading" class="loading">正在載入通知…</div>
+        <div id="noticeGrid" class="notice-grid hidden"></div>
+      </section>
+
+      <section id="adminView" class="view hidden">
+        <div class="admin-header">
+          <p class="eyebrow">PRIVATE ADMIN</p>
+          <h2>管理通知資料</h2>
+          <p>這裡的資料會同步寫入通知試算表；圖片會保存至指定的 Google Drive 資料夾。</p>
+          <p id="adminStatus" class="status">正在確認管理者權限…</p>
+          <p><a id="sheetLink" class="top-link" href="#" target="_blank" rel="noopener">直接開啟通知試算表</a></p>
+        </div>
+
+        <div id="adminLoading" class="loading">正在載入管理資料…</div>
+        <div id="adminLayout" class="admin-layout hidden">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3 id="formHeading">新增通知</h3>
+              <button id="resetForm" class="button secondary small" type="button">清空</button>
+            </div>
+            <div class="panel-body">
+              <form id="noticeForm" class="form-grid">
+                <input id="noticeId" type="hidden">
+                <input id="imageFileId" type="hidden">
+                <input id="imageUrl" type="hidden">
+                <div class="field">
+                  <label for="noticeTitle">通知標題</label>
+                  <input id="noticeTitle" maxlength="200" required placeholder="例如：9 月學費繳費通知">
+                </div>
+                <div class="field">
+                  <label for="noticeDate">通知日期</label>
+                  <input id="noticeDate" type="date" required>
+                  <span class="file-note">月份會依通知日期自動產生。</span>
+                </div>
+                <div class="field">
+                  <label for="noticeCategory">通知分類</label>
+                  <select id="noticeCategory" required></select>
+                </div>
+                <div class="field">
+                  <label for="noticeContent">通知內容</label>
+                  <textarea id="noticeContent" maxlength="10000" placeholder="請輸入要保存的通知文字；圖片通知也可只上傳圖片。"></textarea>
+                </div>
+                <div class="field">
+                  <label for="noticeImage">通知圖片</label>
+                  <input id="noticeImage" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+                  <span class="file-note">支援 JPG、PNG、GIF、WebP，單張最大 8 MB。</span>
+                  <img id="imagePreview" class="image-preview" alt="通知圖片預覽">
+                  <button id="clearImage" class="button secondary small hidden" type="button">移除圖片</button>
+                </div>
+                <div class="check-row">
+                  <label><input id="noticePublished" type="checkbox"> 發布到家長公開頁</label>
+                  <label><input id="noticePinned" type="checkbox"> 置頂顯示</label>
+                </div>
+                <div class="field">
+                  <label for="startDate">開始顯示日（可選）</label>
+                  <input id="startDate" type="date">
+                </div>
+                <div class="field">
+                  <label for="endDate">結束顯示日（可選）</label>
+                  <input id="endDate" type="date">
+                </div>
+                <div class="form-actions">
+                  <button id="saveNotice" class="button accent" type="submit">保存通知</button>
+                  <button id="cancelEdit" class="button secondary hidden" type="button">取消編輯</button>
+                </div>
+                <p id="formStatus" class="status"></p>
+              </form>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>既有通知</h3>
+              <button id="reloadAdmin" class="button secondary small" type="button">重新整理</button>
+            </div>
+            <div class="panel-body">
+              <div id="adminList" class="admin-list"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <footer>通知內容由管理者維護，公開頁只顯示已發布且在有效期間內的資料。</footer>
+  </div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script>
+    const INITIAL_VIEW = <?!= JSON.stringify(initialView || 'public') ?>;
+
+    (function() {
+      'use strict';
+
+      const state = {
+        view: INITIAL_VIEW,
+        categories: [],
+        publicNotices: [],
+        adminNotices: [],
+        currentImage: { fileId: '', imageUrl: '' },
+        toastTimer: null
+      };
+
+      const $ = function(id) { return document.getElementById(id); };
+
+      function server(method) {
+        const args = Array.prototype.slice.call(arguments, 1);
+        return new Promise(function(resolve, reject) {
+          const runner = google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(function(error) {
+              reject(new Error(error && error.message ? error.message : String(error)));
+            });
+          runner[method].apply(runner, args);
+        });
+      }
+
+      function showToast(message, type) {
+        const toast = $('toast');
+        toast.textContent = message;
+        toast.className = 'toast' + (type ? ' ' + type : '');
+        window.clearTimeout(state.toastTimer);
+        state.toastTimer = window.setTimeout(function() {
+          toast.className = 'toast hidden';
+        }, 4600);
+      }
+
+      function setStatus(element, message, type) {
+        element.textContent = message || '';
+        element.className = 'status' + (type ? ' ' + type : '');
+      }
+
+      function formatMonth(month) {
+        if (!month) return '';
+        const parts = month.split('-');
+        return parts.length === 2 ? parts[0] + ' 年 ' + Number(parts[1]) + ' 月' : month;
+      }
+
+      function formatDate(date) {
+        return date ? date.replace(/-/g, '/') : '';
+      }
+
+      function formatNoticeMeta(notice) {
+        return [formatDate(notice.noticeDate), formatMonth(notice.month)].filter(Boolean).join(' · ');
+      }
+
+      function unique(values) {
+        return values.filter(function(value, index) { return value && values.indexOf(value) === index; });
+      }
+
+      function setOptions(select, values, firstLabel, formatter) {
+        select.replaceChildren();
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = firstLabel;
+        select.appendChild(first);
+        values.forEach(function(value) {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = formatter ? formatter(value) : value;
+          select.appendChild(option);
+        });
+      }
+
+      function createBadge(text, className) {
+        const badge = document.createElement('span');
+        badge.className = 'badge' + (className ? ' ' + className : '');
+        badge.textContent = text;
+        return badge;
+      }
+
+      function renderPublic() {
+        const month = $('monthFilter').value;
+        const category = $('categoryFilter').value;
+        const notices = state.publicNotices.filter(function(notice) {
+          return (!month || notice.month === month) && (!category || notice.category === category);
+        });
+        $('publicCount').textContent = notices.length;
+        const grid = $('noticeGrid');
+        grid.replaceChildren();
+
+        if (!notices.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = '目前沒有符合條件的通知。';
+          grid.appendChild(empty);
+        } else {
+          notices.forEach(function(notice) {
+            const card = document.createElement('article');
+            card.className = 'notice-card' + (notice.pinned ? ' pinned' : '');
+            if (notice.imageUrl) {
+              const image = document.createElement('img');
+              image.className = 'notice-image';
+              image.src = notice.imageUrl;
+              image.alt = notice.title;
+              image.loading = 'lazy';
+              image.addEventListener('error', function() { image.remove(); });
+              card.appendChild(image);
+            }
+
+            const body = document.createElement('div');
+            body.className = 'notice-card-body';
+            const badges = document.createElement('div');
+            badges.className = 'badge-row';
+            badges.appendChild(createBadge(notice.category));
+            if (notice.pinned) badges.appendChild(createBadge('置頂', 'pin'));
+            body.appendChild(badges);
+
+            const heading = document.createElement('h3');
+            heading.textContent = notice.title;
+            body.appendChild(heading);
+            const date = document.createElement('div');
+            date.className = 'notice-date';
+            date.textContent = formatNoticeMeta(notice);
+            body.appendChild(date);
+            if (notice.content) {
+              const content = document.createElement('p');
+              content.className = 'notice-content';
+              content.textContent = notice.content;
+              body.appendChild(content);
+            }
+            card.appendChild(body);
+            grid.appendChild(card);
+          });
+        }
+
+        $('publicLoading').classList.add('hidden');
+        grid.classList.remove('hidden');
+      }
+
+      async function loadPublic() {
+        try {
+          const data = await server('getPublicBootstrap');
+          state.categories = data.categories || [];
+          state.publicNotices = data.notices || [];
+          setOptions($('monthFilter'), data.months || [], '全部月份', formatMonth);
+          setOptions($('categoryFilter'), state.categories, '全部分類');
+          renderPublic();
+        } catch (error) {
+          $('publicLoading').textContent = '通知載入失敗：' + error.message;
+        }
+      }
+
+      function showPublicView() {
+        state.view = 'public';
+        $('adminView').classList.add('hidden');
+        $('publicView').classList.remove('hidden');
+        loadPublic();
+      }
+
+      function renderAdminList() {
+        const list = $('adminList');
+        list.replaceChildren();
+        if (!state.adminNotices.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = '尚未建立通知，先從左側新增第一筆。';
+          list.appendChild(empty);
+          return;
+        }
+
+        state.adminNotices.forEach(function(notice) {
+          const item = document.createElement('article');
+          item.className = 'admin-item';
+          const info = document.createElement('div');
+          const title = document.createElement('h4');
+          title.textContent = notice.title;
+          info.appendChild(title);
+          const meta = document.createElement('div');
+          meta.className = 'admin-meta';
+          const category = document.createElement('span');
+          category.textContent = notice.category;
+          const date = document.createElement('span');
+          date.textContent = formatNoticeMeta(notice);
+          const status = document.createElement('span');
+          status.textContent = notice.published ? '已發布' : '草稿';
+          meta.append(category, date, status);
+          if (notice.pinned) {
+            const pinned = document.createElement('span');
+            pinned.textContent = '置頂';
+            meta.appendChild(pinned);
+          }
+          info.appendChild(meta);
+          const actions = document.createElement('div');
+          actions.className = 'admin-actions';
+          const edit = document.createElement('button');
+          edit.className = 'button secondary small';
+          edit.type = 'button';
+          edit.textContent = '編輯';
+          edit.addEventListener('click', function() { fillForm(notice); });
+          actions.appendChild(edit);
+          item.append(info, actions);
+          list.appendChild(item);
+        });
+      }
+
+      function fillForm(notice) {
+        $('noticeId').value = notice.id || '';
+        $('noticeTitle').value = notice.title || '';
+        $('noticeDate').value = notice.noticeDate || '';
+        $('noticeCategory').value = notice.category || state.categories[0] || '';
+        $('noticeContent').value = notice.content || '';
+        $('noticePublished').checked = Boolean(notice.published);
+        $('noticePinned').checked = Boolean(notice.pinned);
+        $('startDate').value = notice.startDate || '';
+        $('endDate').value = notice.endDate || '';
+        state.currentImage = { fileId: notice.imageFileId || '', imageUrl: notice.imageUrl || '' };
+        $('imageFileId').value = state.currentImage.fileId;
+        $('imageUrl').value = state.currentImage.imageUrl;
+        updateImagePreview(state.currentImage.imageUrl);
+        $('formHeading').textContent = '編輯通知';
+        $('cancelEdit').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function resetForm() {
+        $('noticeForm').reset();
+        $('noticeId').value = '';
+        $('imageFileId').value = '';
+        $('imageUrl').value = '';
+        state.currentImage = { fileId: '', imageUrl: '' };
+        updateImagePreview('');
+        $('formHeading').textContent = '新增通知';
+        $('cancelEdit').classList.add('hidden');
+        setStatus($('formStatus'), '');
+      }
+
+      function updateImagePreview(url) {
+        const image = $('imagePreview');
+        const clearButton = $('clearImage');
+        if (url) {
+          image.src = url;
+          image.classList.add('visible');
+          clearButton.classList.remove('hidden');
+        } else {
+          image.removeAttribute('src');
+          image.classList.remove('visible');
+          clearButton.classList.add('hidden');
+        }
+      }
+
+      function readFile(file) {
+        return new Promise(function(resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function() { resolve(reader.result); };
+          reader.onerror = function() { reject(new Error('圖片讀取失敗。')); };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function saveForm(event) {
+        event.preventDefault();
+        const button = $('saveNotice');
+        const formStatus = $('formStatus');
+        button.disabled = true;
+        setStatus(formStatus, '正在保存…');
+        try {
+          const file = $('noticeImage').files[0];
+          if (file) {
+            setStatus(formStatus, '正在上傳圖片…');
+            const upload = await server('uploadImage', await readFile(file), file.name, file.type);
+            state.currentImage = { fileId: upload.fileId, imageUrl: upload.imageUrl };
+            $('imageFileId').value = upload.fileId;
+            $('imageUrl').value = upload.imageUrl;
+            updateImagePreview(upload.imageUrl);
+            if (upload.sharingWarning) showToast(upload.sharingWarning, 'warning');
+          }
+
+          const payload = {
+            id: $('noticeId').value,
+            title: $('noticeTitle').value,
+            noticeDate: $('noticeDate').value,
+            category: $('noticeCategory').value,
+            content: $('noticeContent').value,
+            imageFileId: $('imageFileId').value,
+            imageUrl: $('imageUrl').value,
+            published: $('noticePublished').checked,
+            pinned: $('noticePinned').checked,
+            startDate: $('startDate').value,
+            endDate: $('endDate').value
+          };
+          await server('saveNotice', payload);
+          showToast('通知已保存。');
+          resetForm();
+          await loadAdmin();
+        } catch (error) {
+          setStatus(formStatus, error.message, 'error');
+          showToast(error.message, 'error');
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function loadAdmin() {
+        $('adminLoading').classList.remove('hidden');
+        $('adminLayout').classList.add('hidden');
+        try {
+          const data = await server('getAdminBootstrap');
+          state.categories = data.categories || [];
+          state.adminNotices = data.notices || [];
+          setOptions($('noticeCategory'), state.categories, '請選擇分類');
+          renderAdminList();
+          $('sheetLink').href = data.spreadsheetUrl || '#';
+          setStatus($('adminStatus'), '管理者：' + (data.adminEmail || '目前帳號'), 'ok');
+          $('adminLoading').classList.add('hidden');
+          $('adminLayout').classList.remove('hidden');
+        } catch (error) {
+          $('adminLoading').textContent = '無法開啟管理頁。';
+          setStatus($('adminStatus'), error.message, 'error');
+        }
+      }
+
+      function bindEvents() {
+        $('showPublic').addEventListener('click', showPublicView);
+        $('monthFilter').addEventListener('change', renderPublic);
+        $('categoryFilter').addEventListener('change', renderPublic);
+        $('clearFilters').addEventListener('click', function() {
+          $('monthFilter').value = '';
+          $('categoryFilter').value = '';
+          renderPublic();
+        });
+        $('noticeForm').addEventListener('submit', saveForm);
+        $('resetForm').addEventListener('click', resetForm);
+        $('cancelEdit').addEventListener('click', resetForm);
+        $('reloadAdmin').addEventListener('click', loadAdmin);
+        $('clearImage').addEventListener('click', function() {
+          $('noticeImage').value = '';
+          $('imageFileId').value = '';
+          $('imageUrl').value = '';
+          state.currentImage = { fileId: '', imageUrl: '' };
+          updateImagePreview('');
+        });
+        $('noticeImage').addEventListener('change', function() {
+          const file = $('noticeImage').files[0];
+          if (file) updateImagePreview(URL.createObjectURL(file));
+        });
+      }
+
+      function init() {
+        bindEvents();
+        if (state.view === 'admin') {
+          $('publicView').classList.add('hidden');
+          $('adminView').classList.remove('hidden');
+          loadAdmin();
+        } else {
+          $('adminView').classList.add('hidden');
+          $('publicView').classList.remove('hidden');
+          loadPublic();
+        }
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
