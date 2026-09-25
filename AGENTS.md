@@ -4,6 +4,7 @@
 - **專案名稱**：雲端公告（家長通知中心）
 - **專案用途**：官方帳號通知的長期保存與查閱系統，支援行動載具直覺瀏覽，並整合 LINE 官方帳號群發雙向同步。
 - **主要工作目錄**：`/Users/tunyuan/opencode_0715/雲端公告`
+- **GitHub Repo**：[https://github.com/asc103138/cloud-notice](https://github.com/asc103138/cloud-notice)
 
 ## Obsidian 關聯筆記
 - **Vault 路徑**：`/Users/tunyuan/opencode_0715`
